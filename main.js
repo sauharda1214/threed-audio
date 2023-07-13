@@ -69,9 +69,7 @@ function main() {
   }
  
 
-  // Automatically play audio when a file is selected
-  var audInput = document.getElementById("audioInput");
-  audInput.addEventListener("change", playAudio);
+ const playBtn = document.getElementById('playBtn').onclick = playAudio
 
   //animate camera
   amimateCam();
