@@ -68,7 +68,10 @@ function main() {
       positionalAudio.setBuffer(buffer);
       positionalAudio.setRefDistance(4.5);
 
+      document.getElementById('playBtn').onclick = function(){
         positionalAudio.play();
+      }
+        
 
       positionalAudio.setLoop(true);
 
