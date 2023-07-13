@@ -61,10 +61,13 @@ function main() {
       positionalAudio.setLoop(true);
 
       audioSource = positionalAudio;
-
+      cube.add(positionalAudio)
       camera.add(positionalAudio);
+
+      const analyser = new THREE.AudioAnalyser(positionalAudio, 512); // Create an AudioAnalyser
     });
   }
+ 
 
   // Automatically play audio when a file is selected
   var audInput = document.getElementById("audioInput");
@@ -142,6 +145,9 @@ function main() {
     const targetZ = Math.tan(time * 0.5) * 5; // Z-coordinate of the point the camera looks at
     const lookAtPosition = new THREE.Vector3(targetX, targetY, targetZ);
     camera.lookAt(lookAtPosition);
+
+    controls.update();
+    renderer.render(scene, camera);
   }
 
   window.addEventListener("resize", onWindowResize);
