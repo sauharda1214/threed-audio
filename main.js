@@ -10,11 +10,11 @@ let audioSource = null;
 overlayBtn.addEventListener("click", main);
 
 function main() {
-  //remove overlays
+  // Remove overlays
   overlay.remove();
-  //laod HTML from the js file
+  // Load HTML from the js file
   pageHTML();
-  //scene
+  // Scene
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
     75,
@@ -23,7 +23,7 @@ function main() {
     1000
   );
 
-  //renderer
+  // Renderer
   const renderer = new THREE.WebGLRenderer({
     canvas: document.getElementById("canvas"),
     antialias: true,
@@ -31,36 +31,30 @@ function main() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
 
-  //orbitControls
+  // OrbitControls
   const controls = new OrbitControls(camera, renderer.domElement);
   camera.position.set(0, 0, 10);
   controls.update();
 
-  const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+  const geometry = new THREE.BoxGeometry(1, 1, 1);
   const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
   const cube = new THREE.Mesh(geometry, material);
   scene.add(cube);
 
-  function playAudio() {
-    var audInput = document.getElementById("audioInput");
-    var file = audInput.files[0];
+  function playAudio(file, onProgress) {
     var fileURL = URL.createObjectURL(file);
 
     var audioListener = new THREE.AudioListener();
     var audioLoader = new THREE.AudioLoader();
 
-    // Progress text element
-    var progressText = document.getElementById("progressText");
-
-    // Create XMLHttpRequest object to monitor progress
     var xhr = new XMLHttpRequest();
     xhr.open("GET", fileURL, true);
     xhr.responseType = "blob";
 
-    xhr.upload.addEventListener("progress", function (event) {
+    xhr.addEventListener("progress", function (event) {
       if (event.lengthComputable) {
         var percentComplete = (event.loaded / event.total) * 100;
-        progressText.innerText = percentComplete.toFixed(2) + "%";
+        onProgress(percentComplete.toFixed(2));
       }
     });
 
@@ -75,7 +69,6 @@ function main() {
           var positionalAudio = new THREE.PositionalAudio(audioListener);
           positionalAudio.setBuffer(buffer);
           positionalAudio.setRefDistance(2);
-          positionalAudio.play();
           positionalAudio.setLoop(true);
 
           audioSource = positionalAudio;
@@ -87,14 +80,32 @@ function main() {
 
     xhr.send();
   }
- 
 
- document.getElementById('playBtn').onclick = playAudio
+  var audInput = document.getElementById("audioInput");
+  var progressText = document.getElementById("progressText");
+  var playBtn = document.getElementById("playBtn");
+  playBtn.hidden = true;
 
-  //animate camera
-  amimateCam();
-  function amimateCam() {
-    requestAnimationFrame(amimateCam);
+  audInput.addEventListener("change", function () {
+    var file = audInput.files[0];
+    playAudio(file, function (progress) {
+      progressText.innerText = progress + "%";
+      if (progress === "100.00") {
+        playBtn.hidden = false; // Enable the button after file upload is complete
+      }
+    });
+  });
+
+  playBtn.addEventListener("click", function () {
+    if (audioSource) {
+      audioSource.play();
+    }
+  });
+
+  // Animate camera
+  animateCam();
+  function animateCam() {
+    requestAnimationFrame(animateCam);
 
     const radius = 10; // Radius of the curves
     const speed = 0.0003; // Speed of camera movement
@@ -179,7 +190,7 @@ function main() {
     renderer.render(scene, camera);
   }
 
-  //resize camera according to devices..
+  // Resize camera according to devices
   function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();

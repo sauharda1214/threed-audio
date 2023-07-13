@@ -11,18 +11,13 @@ return`<div class="hamburger-menu">
       Upload an audio file:
       <input label="upload" name="Upload" type="file" id="audioInput" accept=".mp3,.flac,.ogg,.wav,.m4a">
       <div id="progressText"></div>
+      <button id="playBtn">PLAY AUDIO</button>
       <br>
       <h1 id="or">OR</h1>
       </label>
       </div></li>
       <li><div class="menu__item">Browse music :
        <br>
-       <select id="dropdown">
-       <option value="option1">Option 1</option>
-       <option value="option2">Option 2</option>
-       <option value="option3">Option 3</option>
-     </select>
-     <button id="playBtn">PLAY</button>
       </div></li>
       <li>
       </li>
