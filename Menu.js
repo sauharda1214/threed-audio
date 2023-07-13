@@ -9,7 +9,7 @@ return`<div class="hamburger-menu">
       <li><div class="menu__item">
       <label id="audLabel" for="audioInput">
       Select an audio file:
-      <input label="upload" name="Upload" type="file" id="audioInput" accept="audio/*">
+      <input label="upload" name="Upload" type="file" id="audioInput">
       <br>
       <h1 id="or">OR</h1>
       </label>
