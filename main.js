@@ -45,6 +45,7 @@ function main() {
     var fileURL = URL.createObjectURL(file);
 
     var audioListener = new THREE.AudioListener();
+    scene.add(audioListener);
     var audioLoader = new THREE.AudioLoader();
 
     var xhr = new XMLHttpRequest();
