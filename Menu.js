@@ -9,7 +9,8 @@ return`<div class="hamburger-menu">
       <li><div class="menu__item">
       <label id="audLabel" for="audioInput">
       Upload an audio file:
-      <input label="upload" name="Upload" type="file" id="audioInput" accept=".mp3,.flac,.ogg,.wav,.m4a">
+      <input  type="file" id="audioInput" accept=".mp3,.flac,.ogg,.wav,.m4a">
+      <audio id="audio"></audio>
       <div id="progressText"></div>
       <button id="playBtn">PLAY AUDIO</button>
       <br>
