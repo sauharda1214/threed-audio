@@ -36,7 +36,7 @@ function main() {
   camera.position.set(0, 0, 10);
   controls.update();
 
-  const geometry = new THREE.BoxGeometry(1, 1, 1);
+  const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
   const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
   const cube = new THREE.Mesh(geometry, material);
   scene.add(cube);
@@ -49,27 +49,47 @@ function main() {
     var audioListener = new THREE.AudioListener();
     var audioLoader = new THREE.AudioLoader();
 
-    audioLoader.load(fileURL, function (buffer) {
-      if (audioSource) {
-        audioSource.stop(); // Stop the current audio source if it exists
+    // Progress text element
+    var progressText = document.getElementById("progressText");
+
+    // Create XMLHttpRequest object to monitor progress
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", fileURL, true);
+    xhr.responseType = "blob";
+
+    xhr.upload.addEventListener("progress", function (event) {
+      if (event.lengthComputable) {
+        var percentComplete = (event.loaded / event.total) * 100;
+        progressText.innerText = percentComplete.toFixed(2) + "%";
       }
-
-      var positionalAudio = new THREE.PositionalAudio(audioListener);
-      positionalAudio.setBuffer(buffer);
-      positionalAudio.setRefDistance(2);
-      positionalAudio.play();
-      positionalAudio.setLoop(true);
-
-      audioSource = positionalAudio;
-      cube.add(positionalAudio)
-      camera.add(positionalAudio);
-
-      const analyser = new THREE.AudioAnalyser(positionalAudio, 512); // Create an AudioAnalyser
     });
+
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        var blob = xhr.response;
+        audioLoader.load(URL.createObjectURL(blob), function (buffer) {
+          if (audioSource) {
+            audioSource.stop(); // Stop the current audio source if it exists
+          }
+
+          var positionalAudio = new THREE.PositionalAudio(audioListener);
+          positionalAudio.setBuffer(buffer);
+          positionalAudio.setRefDistance(2);
+          positionalAudio.play();
+          positionalAudio.setLoop(true);
+
+          audioSource = positionalAudio;
+          cube.add(positionalAudio);
+          camera.add(positionalAudio);
+        });
+      }
+    };
+
+    xhr.send();
   }
  
 
- const playBtn = document.getElementById('playBtn').onclick = playAudio
+ document.getElementById('playBtn').onclick = playAudio
 
   //animate camera
   amimateCam();

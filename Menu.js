@@ -10,6 +10,7 @@ return`<div class="hamburger-menu">
       <label id="audLabel" for="audioInput">
       Upload an audio file:
       <input label="upload" name="Upload" type="file" id="audioInput" accept=".mp3,.flac,.ogg,.wav,.m4a">
+      <div id="progressText"></div>
       <br>
       <h1 id="or">OR</h1>
       </label>
