@@ -45,7 +45,6 @@ function main() {
     var fileURL = URL.createObjectURL(file);
 
     var audioListener = new THREE.AudioListener();
-    camera.add(audioListener);
     var audioLoader = new THREE.AudioLoader();
 
     var xhr = new XMLHttpRequest();
