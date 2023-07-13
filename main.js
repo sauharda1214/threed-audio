@@ -33,41 +33,174 @@ function main() {
 
   //orbitControls
   const controls = new OrbitControls(camera, renderer.domElement);
-  camera.position.set(0, 0, 10);
+  camera.position.set(0, 0, 5);
   controls.update();
 
-  const geometry = new THREE.BoxGeometry(1, 1, 1);
-  const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1); // Set the color and intensity of the ambient light
+  ambientLight.position.set(0, 0, 15);
+  scene.add(ambientLight);
+
+  const sphgeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+  const sphmaterial = new THREE.MeshBasicMaterial({
+    color: 0xffff00,
+  });
+  const sphere = new THREE.Mesh(sphgeometry, sphmaterial);
+  scene.add(sphere);
+
+  const geometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+  const material = new THREE.MeshBasicMaterial({
+    color: 0x00ff00,
+    wireframe: true,
+    wireframeLinewidth: 2,
+  });
   const cube = new THREE.Mesh(geometry, material);
   scene.add(cube);
+
   var audInput = document.getElementById("audioInput");
   var audioListener = new THREE.AudioListener();
   var audioLoader = new THREE.AudioLoader();
   var positionalAudio = new THREE.PositionalAudio(audioListener);
 
-
-  audInput.addEventListener("change", playAudio)
-  function playAudio() {
-    
+  audInput.addEventListener("change", function playAudio() {
     var file = audInput.files[0];
     var fileURL = URL.createObjectURL(file);
-
- 
     audioLoader.load(fileURL, function (buffer) {
       positionalAudio.setBuffer(buffer);
-      positionalAudio.setRefDistance(2);
-      document.getElementById('playBtn').onclick = function() {
+      positionalAudio.setRefDistance(4.5);
+
         positionalAudio.play();
-      } 
+
       positionalAudio.setLoop(true);
 
       audioSource = positionalAudio;
-      cube.add(positionalAudio)
+      cube.add(positionalAudio);
       camera.add(positionalAudio);
 
+      createAudioAnalyzer(positionalAudio); // Create audio analyzer after loading audio
     });
+  });
+
+  var audioAnalyzer;
+
+  function createAudioAnalyzer(audioSource) {
+    const audioContext = new (window.AudioContext ||
+      window.webkitAudioContext)();
+    audioAnalyzer = new THREE.AudioAnalyser(audioSource, 512); // 32 is the number of frequency bands for analysis
   }
- 
+
+  //1000 spheres
+
+  function randomSpheres() {
+    const stars = new THREE.SphereGeometry(0.01, 8, 8);
+    const color = new THREE.Color(performance.now() * Math.random() * 0xffffff);
+    const material = new THREE.MeshStandardMaterial({
+      color: color,
+      emissive: color,
+      emissiveIntensity: 2,
+    });
+    const star = new THREE.Mesh(stars, material);
+    const group = new THREE.Group();
+
+    const center = new THREE.Vector3(0, 0, 0);
+    const outerRadius = 6;
+    const innerRadius = 6;
+    const angle1 = Math.random() * 2 * Math.PI;
+    const angle2 = Math.random() * 2 * Math.PI;
+    const radiusOffset =
+      Math.sqrt(Math.random()) * (outerRadius - innerRadius) + innerRadius;
+
+    star.position.set(
+      center.x + radiusOffset * Math.sin(angle1) * Math.cos(angle2),
+      center.y + radiusOffset * Math.sin(angle1) * Math.sin(angle2),
+      center.z + radiusOffset * Math.cos(angle1)
+    );
+    group.add(star);
+    scene.add(group);
+
+    function animateGroup() {
+      requestAnimationFrame(animateGroup);
+      group.rotation.x += 0.02;
+    }
+
+    animateGroup();
+  }
+
+  Array(1700).fill().forEach(randomSpheres);
+
+  //camera animaion
+  moveCamera();
+
+  function moveCamera() {
+    requestAnimationFrame(moveCamera);
+
+    const radius = 10; // Radius of the curves
+    const speed = 0.0003; // Speed of camera movement
+
+    const time = speed * Date.now(); // Time-based parameter for the curves
+
+    // X-coordinate of the camera position using a combination of sine and cosine functions
+    const x =
+      Math.sin(time) *
+      Math.cos(time * 2) *
+      Math.sin(time * 3) *
+      Math.cos(Math.PI * time) *
+      radius;
+
+    // Y-coordinate of the camera position using a combination of sine and cosine functions
+    const y =
+      Math.sin(time * 0.5) *
+      Math.sin(time * 1.5, time) *
+      Math.cos(time * 2.5) *
+      radius;
+
+    // Z-coordinate of the camera position using a combination of sine and cosine functions
+    const z =
+      Math.sin(time * 3) * Math.cos(time * 0.5) * Math.sin(time * 0.5) * radius;
+
+    const threshold = 1; // Minimum distance from the center of the scene
+
+    // Check if the camera position is within the threshold bounds
+    const distance = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
+    if (distance < threshold) {
+      // Normalize the vector and multiply by the threshold value
+      const scaleFactor = threshold / distance;
+      camera.position.set(x * scaleFactor, y * scaleFactor, z * scaleFactor);
+    } else {
+      camera.position.set(x, y, z);
+    }
+
+    // Additional Animations: Combine multiple effects
+
+    // Animation 1: Changing the camera's rotation
+    const rotationSpeed = 0.001; // Speed of camera rotation
+    const rotationX = Math.cos(time * rotationSpeed); // Rotation around the x-axis
+    const rotationY = Math.sin(time * rotationSpeed, time); // Rotation around the y-axis
+    const rotationZ = Math.tan(time * rotationSpeed * 0.001); // Rotation around the z-axis
+    camera.rotation.set(rotationX, rotationY, rotationZ);
+
+    // Animation 2: Varying field of view
+    const fov = 60 + Math.sin(time * 0.5) * 20; // Varying field of view
+    camera.fov = fov;
+    camera.updateProjectionMatrix();
+
+    // Animation 3: Changing the camera's up vector
+    const upVectorX = Math.cos(time * 0.8); // X-component of the camera's up vector
+    const upVectorY = Math.sin(time * 1.2); // Y-component of the camera's up vector
+    const upVectorZ = Math.cos(time * 0.4); // Z-component of the camera's up vector
+    const upVector = new THREE.Vector3(
+      upVectorX,
+      upVectorY,
+      upVectorZ
+    ).normalize();
+    camera.up.copy(upVector);
+
+    // Animation 6: Moving the camera's target
+    const targetX = Math.cos(time * 1.5) * 5; // X-coordinate of the point the camera looks at
+    const targetY = Math.sin(time * 2) * 5; // Y-coordinate of the point the camera looks at
+    const targetZ = Math.cos(time * 0.5) * 5; // Z-coordinate of the point the camera looks at
+    const lookAtPosition = new THREE.Vector3(targetX, targetY, targetZ);
+    camera.lookAt(lookAtPosition);
+  }
 
   window.addEventListener("resize", onWindowResize);
 
@@ -75,8 +208,38 @@ function main() {
 
   function animate() {
     requestAnimationFrame(animate);
+
+    if (audioAnalyzer) {
+      const frequencyData = audioAnalyzer.getFrequencyData();
+
+      // Calculate the lerp values for rotation, size, and hue based on the frequency data
+      const rotationLerp = THREE.MathUtils.lerp(0, 0.1, frequencyData[0] / 255); // Adjust the range and the frequency index as needed
+      const sizeLerp = THREE.MathUtils.lerp(1, 2,   frequencyData[1] / 55); // Adjust the range and the frequency index as needed
+      const hueLerp = THREE.MathUtils.lerp(0, 1,   frequencyData[2] / 155); // Adjust the range and the frequency index as needed
+      const SphsizeLerp = THREE.MathUtils.lerp(1, 1,   frequencyData[1] / 55);
+      // Update the rotation of the box
+      cube.rotateX += rotationLerp;
+      cube.rotation.y += rotationLerp / 10;
+      cube.rotation.z += rotationLerp / 10;
+
+      sphere.rotation.x += 0.01;
+      sphere.rotation.y += 0.01;
+      sphere.rotation.z += 0.01;
+
+      sphere.scale.set(SphsizeLerp, SphsizeLerp, SphsizeLerp);
+      // Update the hue of the sphere
+      const hueColor = new THREE.Color();
+      hueColor.setHSL(hueLerp, 1, 0.5);
+      sphere.material.color.copy(hueColor);
+
+      // Update the size of the box
+      cube.scale.set(sizeLerp, sizeLerp, sizeLerp);
+
+      // Update the hue of the box
+      cube.material.color.setHSL(hueLerp, 0.5, 0.5);
+    }
+
     controls.update();
-    cube.rotation.y += 0.01;
     renderer.render(scene, camera);
   }
 
