@@ -5,16 +5,16 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 const overlayBtn = document.getElementById("startButton");
 const overlay = document.getElementById("overlay");
-
+let audioSource = null;
 
 overlayBtn.addEventListener("click", main);
 
 function main() {
-  // Remove overlays
+  //remove overlays
   overlay.remove();
-  // Load HTML from the js file
+  //laod HTML from the js file
   pageHTML();
-  // Scene
+  //scene
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
     75,
@@ -23,7 +23,7 @@ function main() {
     1000
   );
 
-  // Renderer
+  //renderer
   const renderer = new THREE.WebGLRenderer({
     canvas: document.getElementById("canvas"),
     antialias: true,
@@ -31,7 +31,7 @@ function main() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
 
-  // OrbitControls
+  //orbitControls
   const controls = new OrbitControls(camera, renderer.domElement);
   camera.position.set(0, 0, 10);
   controls.update();
@@ -40,20 +40,34 @@ function main() {
   const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
   const cube = new THREE.Mesh(geometry, material);
   scene.add(cube);
-
-  const audioFile = document.getElementById('audioInput');
-  const audio = document.getElementById('audio');
-  audioFile.addEventListener("change", () => {
-
-    const files = audioFile.files; 
-    console.log(files)
-    audio.src = URL.createObjectURL(files[0]);
-    audio.load();
-    audio.play();
-  });
-  
+  var audInput = document.getElementById("audioInput");
+  var audioListener = new THREE.AudioListener();
+  var audioLoader = new THREE.AudioLoader();
+  var positionalAudio = new THREE.PositionalAudio(audioListener);
 
 
+  audInput.addEventListener("change", playAudio)
+  function playAudio() {
+    
+    var file = audInput.files[0];
+    var fileURL = URL.createObjectURL(file);
+
+ 
+    audioLoader.load(fileURL, function (buffer) {
+      positionalAudio.setBuffer(buffer);
+      positionalAudio.setRefDistance(2);
+      document.getElementById('playBtn').onclick = function() {
+        positionalAudio.play();
+      } 
+      positionalAudio.setLoop(true);
+
+      audioSource = positionalAudio;
+      cube.add(positionalAudio)
+      camera.add(positionalAudio);
+
+    });
+  }
+ 
 
   window.addEventListener("resize", onWindowResize);
 
@@ -66,7 +80,7 @@ function main() {
     renderer.render(scene, camera);
   }
 
-  // Resize camera according to devices
+  //resize camera according to devices..
   function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
