@@ -190,8 +190,8 @@ function main() {
   function moveCamera() {
     requestAnimationFrame(moveCamera);
 
-    const radius = 10; // Radius of the curves
-    const speed = 0.0003; // Speed of camera movement
+    const radius = 20; // Radius of the curves
+    const speed = 0.0002; // Speed of camera movement
 
     const time = speed * Date.now(); // Time-based parameter for the curves
 
@@ -205,14 +205,14 @@ function main() {
 
     // Y-coordinate of the camera position using a combination of sine and cosine functions
     const y =
-      Math.tan(time *0.04) *
+      Math.cos(time *0.04) *
       Math.sin(time * 1.5, time) *
       Math.sin(time * 2.5,time) *
       radius;
 
     // Z-coordinate of the camera position using a combination of sine and cosine functions
     const z =
-      Math.sin(time * 3) * Math.sin(time * 0.5) * Math.sin(time * 0.5) * radius;
+      Math.sin(time * 3) * Math.sin(time * 0.5) * Math.cos(time * 0.5) * radius;
 
     const threshold = 2; // Minimum distance from the center of the scene
 
@@ -232,7 +232,7 @@ function main() {
     const rotationSpeed = 0.001; // Speed of camera rotation
     const rotationX = Math.cos(time * rotationSpeed); // Rotation around the x-axis
     const rotationY = Math.sin(time * rotationSpeed, time); // Rotation around the y-axis
-    const rotationZ = Math.tan(time * rotationSpeed * 0.001); // Rotation around the z-axis
+    const rotationZ = Math.tanh(time * rotationSpeed * 0.001); // Rotation around the z-axis
     camera.rotation.set(rotationX, rotationY, rotationZ);
 
     // Animation 2: Varying field of view
@@ -241,9 +241,9 @@ function main() {
     camera.updateProjectionMatrix();
 
     // Animation 6: Moving the camera's target
-    const targetX = Math.cos(time * 1.5) * 5; // X-coordinate of the point the camera looks at
+    const targetX = Math.acos(time * 1.5) * 5; // X-coordinate of the point the camera looks at
     const targetY = Math.sin(time * 2) * 5; // Y-coordinate of the point the camera looks at
-    const targetZ = Math.cosh(time * 0.5) * 5; // Z-coordinate of the point the camera looks at
+    const targetZ = Math.tan(time * 0.5) * 5; // Z-coordinate of the point the camera looks at
     const lookAtPosition = new THREE.Vector3(targetX, targetY, targetZ);
     camera.lookAt(lookAtPosition);
   }
