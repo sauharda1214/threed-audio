@@ -1,22 +1,22 @@
-import danger from './images/whatsupdanger.jpg';
+import danger from './images/whatsupdanger.jpg'
 
 export function songList() {
   return `
   <div id="musicList">
-  <div  data-src="Blackway Black Caviar - Whats Up Danger (Spider-Man Into the Spider-Verse) [Official Audio] [TubeRipper.com].flac">
+  <div  data-src="./music/Blackway Black Caviar - Whats Up Danger (Spider-Man Into the Spider-Verse) [Official Audio] [TubeRipper.com].flac">
   <img src=${danger}>
   <p class="truncate-text">
   Blackway & Black Caviar - "What's Up Danger"
   </p>
   </div>
-<div  data-src="music/Post Malone - Sunflower (Lyrics) ft. Swae Lee [TubeRipper.com].flac">
+<div  data-src="./music/Post Malone - Sunflower (Lyrics) ft. Swae Lee [TubeRipper.com].flac">
 <img src="./images/sunflower.jpg">
 <p class="truncate-text">
 Post Malone, Swae Lee - Sunflower
 </p>
 </div>
 
-<div  data-src="music/Metro Boomin Coi Leray - Self Love (Spider-Man Across the Spider-Verse) [TubeRipper.com].flac">
+<div  data-src="./music/Metro Boomin Coi Leray - Self Love (Spider-Man Across the Spider-Verse) [TubeRipper.com].flac">
 <img src="./images/selflove.jpg">
 <p class="truncate-text">
 Self Love - Metro Boomin, Coi Leray

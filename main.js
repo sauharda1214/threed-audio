@@ -95,10 +95,12 @@ function main() {
     });
   };
 
-  // Function to handle button click
   function handleButtonClick() {
     const dataSrc = this.getAttribute("data-src");
-    audioLoader.load(dataSrc, function (buffer) {
+    const urlObject = new URL(dataSrc, window.location.href);
+
+    console.log(urlObject.href)
+    audioLoader.load(urlObject.href, function (buffer) {
       playAudio(buffer);
     });
   }
