@@ -1,3 +1,7 @@
+import { songList } from "./songList";
+
+
+
 export function menu(){
 return`<div class="hamburger-menu">
     <input id="menu__toggle" type="checkbox" />
@@ -6,6 +10,7 @@ return`<div class="hamburger-menu">
     </label>
 
     <ul class="menu__box">
+    <div id="stats"></div>
       <li><div class="menu__item">
       <label id="audLabel" for="audioInput">
       Upload an audio file:
@@ -20,6 +25,9 @@ return`<div class="hamburger-menu">
        <br>
       </div></li>
       <li>
+      <div class="menu__item">
+      ${songList()}
+      </div>
       </li>
     </ul>
   </div>

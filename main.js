@@ -2,19 +2,23 @@ import { pageHTML } from "./html";
 import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import Stats from "stats.js";
 
 const overlayBtn = document.getElementById("startButton");
-const overlay = document.getElementById("overlay");
-let audioSource = null;
 
 overlayBtn.addEventListener("click", main);
 
 function main() {
-  //remove overlays
+  // remove overlays
   overlay.remove();
-  //laod HTML from the js file
+  // load HTML from the js file
   pageHTML();
-  //scene
+  const stats = new Stats();
+  stats.showPanel(0);
+  stats.dom.style.position="relative"
+  document.getElementById("stats").appendChild(stats.dom);
+
+  // scene
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
     75,
@@ -22,8 +26,8 @@ function main() {
     0.1,
     1000
   );
-
-  //renderer
+  camera.position.z = 5;
+  // renderer
   const renderer = new THREE.WebGLRenderer({
     canvas: document.getElementById("canvas"),
     antialias: true,
@@ -31,23 +35,23 @@ function main() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
 
-  //orbitControls
+  // orbitControls
   const controls = new OrbitControls(camera, renderer.domElement);
-  camera.position.set(0, 0, 5);
+
   controls.update();
 
-  const ambientLight = new THREE.AmbientLight(0xffffff, 1); // Set the color and intensity of the ambient light
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1);
   ambientLight.position.set(0, 0, 15);
   scene.add(ambientLight);
 
-  const sphgeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-  const sphmaterial = new THREE.MeshBasicMaterial({
+  const cubegm = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+  const cubeml = new THREE.MeshBasicMaterial({
     color: 0xffff00,
   });
-  const sphere = new THREE.Mesh(sphgeometry, sphmaterial);
-  scene.add(sphere);
+  const smcube = new THREE.Mesh(cubegm, cubeml);
+  scene.add(smcube);
 
-  const geometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+  const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
   const material = new THREE.MeshBasicMaterial({
     color: 0x00ff00,
     wireframe: true,
@@ -60,42 +64,56 @@ function main() {
   var audioListener = new THREE.AudioListener();
   var audioLoader = new THREE.AudioLoader();
   var positionalAudio = new THREE.PositionalAudio(audioListener);
+  var currentAudio = null; // Track the currently playing audio
 
-  audInput.addEventListener("change", function playAudio() {
-    var file = audInput.files[0];
-    var fileURL = URL.createObjectURL(file);
-    audioLoader.load(fileURL, function (buffer) {
-      positionalAudio.setBuffer(buffer);
-      positionalAudio.setRefDistance(4.5);
+  // Function to handle audio play
+  function playAudio(buffer) {
+    if (currentAudio) {
+      currentAudio.stop(); // Stop the currently playing audio
+    }
 
-      document.getElementById('playBtn').onclick = function(){
-        positionalAudio.play();
-      }
-        
+    positionalAudio.setBuffer(buffer);
+    positionalAudio.setLoop(true);
+    positionalAudio.setRefDistance(3.5);
+    smcube.add(positionalAudio);
+    camera.add(positionalAudio);
+    positionalAudio.play();
 
-      positionalAudio.setLoop(true);
-
-      audioSource = positionalAudio;
-      cube.add(positionalAudio);
-      camera.add(positionalAudio);
-
-      createAudioAnalyzer(positionalAudio); // Create audio analyzer after loading audio
-    });
-  });
-
-  var audioAnalyzer;
-
-  function createAudioAnalyzer(audioSource) {
-    const audioContext = new (window.AudioContext ||
-      window.webkitAudioContext)();
-    audioAnalyzer = new THREE.AudioAnalyser(audioSource, 512); // 32 is the number of frequency bands for analysis
+    currentAudio = positionalAudio; // Update the currently playing audio
   }
 
-  //1000 spheres
+  // Calculate average frequency continuously
+  var analyser = new THREE.AudioAnalyser(positionalAudio, 512);
+
+  // Function to handle file input change
+  audInput.onchange = function () {
+    const file = audInput.files[0];
+    audioLoader.load(URL.createObjectURL(file), function (buffer) {
+      document.getElementById("playBtn").onclick = function () {
+        playAudio(buffer);
+      };
+    });
+  };
+
+  // Function to handle button click
+  function handleButtonClick() {
+    const dataSrc = this.getAttribute("data-src");
+    audioLoader.load(dataSrc, function (buffer) {
+      playAudio(buffer);
+    });
+  }
+
+  // Attach event listeners to buttons with data-src attributes
+  var buttons = document.querySelectorAll("div[data-src]");
+  buttons.forEach(function (button) {
+    button.addEventListener("click", handleButtonClick);
+  });
+
+  //random spheres
 
   function randomSpheres() {
     const stars = new THREE.SphereGeometry(0.01, 8, 8);
-    const color = new THREE.Color(performance.now() * Math.random() * 0xffffff);
+    const color = new THREE.Color(Math.random() * 0xffffff);
     const material = new THREE.MeshStandardMaterial({
       color: color,
       emissive: color,
@@ -120,17 +138,25 @@ function main() {
     group.add(star);
     scene.add(group);
 
-    function animateGroup() {
-      requestAnimationFrame(animateGroup);
-      group.rotation.x += 0.02;
+    const shouldAnimateDepth = Math.random() >= 0.4; // Determine if the sphere should animate its depth
+    let originalScale = group.scale.clone(); // Store the original scale for reference
+    const scaleSpeed = 0.2; // Speed for lerping scale
+
+    function updateSphere() {
+      const data = analyser.getAverageFrequency(); // Retrieve average frequency data
+      const depthScale = 1 + data / 200; // Adjust the divisor to control the depth increase speed
+      const scale = shouldAnimateDepth ? depthScale : 1; // Set the scale based on whether depth animation should occur
+      group.scale.lerp(originalScale.clone().multiplyScalar(scale), scaleSpeed); // Apply the scaled depth to the group
     }
 
+    function animateGroup() {
+      requestAnimationFrame(animateGroup);
+      updateSphere();
+    }
     animateGroup();
   }
+  Array(1500).fill().forEach(randomSpheres);
 
-  Array(1700).fill().forEach(randomSpheres);
-
-  //camera animaion
   moveCamera();
 
   function moveCamera() {
@@ -151,7 +177,7 @@ function main() {
 
     // Y-coordinate of the camera position using a combination of sine and cosine functions
     const y =
-      Math.sin(time * 0.5) *
+      Math.tanh(time * 0.5) *
       Math.sin(time * 1.5, time) *
       Math.cos(time * 2.5) *
       radius;
@@ -160,7 +186,7 @@ function main() {
     const z =
       Math.sin(time * 3) * Math.cos(time * 0.5) * Math.sin(time * 0.5) * radius;
 
-    const threshold = 1; // Minimum distance from the center of the scene
+    const threshold = 3; // Minimum distance from the center of the scene
 
     // Check if the camera position is within the threshold bounds
     const distance = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
@@ -189,7 +215,7 @@ function main() {
     // Animation 3: Changing the camera's up vector
     const upVectorX = Math.cos(time * 0.8); // X-component of the camera's up vector
     const upVectorY = Math.sin(time * 1.2); // Y-component of the camera's up vector
-    const upVectorZ = Math.cos(time * 0.4); // Z-component of the camera's up vector
+    const upVectorZ = Math.sin(time * 0.4); // Z-component of the camera's up vector
     const upVector = new THREE.Vector3(
       upVectorX,
       upVectorY,
@@ -200,48 +226,18 @@ function main() {
     // Animation 6: Moving the camera's target
     const targetX = Math.cos(time * 1.5) * 5; // X-coordinate of the point the camera looks at
     const targetY = Math.sin(time * 2) * 5; // Y-coordinate of the point the camera looks at
-    const targetZ = Math.cos(time * 0.5) * 5; // Z-coordinate of the point the camera looks at
+    const targetZ = Math.tan(time * 0.5) * 5; // Z-coordinate of the point the camera looks at
     const lookAtPosition = new THREE.Vector3(targetX, targetY, targetZ);
     camera.lookAt(lookAtPosition);
   }
 
-  window.addEventListener("resize", onWindowResize);
-
   animate();
+  window.addEventListener("resize", onWindowResize);
 
   function animate() {
     requestAnimationFrame(animate);
-
-    if (audioAnalyzer) {
-      const frequencyData = audioAnalyzer.getFrequencyData();
-
-      // Calculate the lerp values for rotation, size, and hue based on the frequency data
-      const rotationLerp = THREE.MathUtils.lerp(0, 0.1, frequencyData[0] / 255); // Adjust the range and the frequency index as needed
-      const sizeLerp = THREE.MathUtils.lerp(1, 2,   frequencyData[1] / 55); // Adjust the range and the frequency index as needed
-      const hueLerp = THREE.MathUtils.lerp(0, 1,   frequencyData[2] / 155); // Adjust the range and the frequency index as needed
-      const SphsizeLerp = THREE.MathUtils.lerp(1, 1,   frequencyData[1] / 55);
-      // Update the rotation of the box
-      cube.rotateX += rotationLerp;
-      cube.rotation.y += rotationLerp / 10;
-      cube.rotation.z += rotationLerp / 10;
-
-      sphere.rotation.x += 0.01;
-      sphere.rotation.y += 0.01;
-      sphere.rotation.z += 0.01;
-
-      sphere.scale.set(SphsizeLerp, SphsizeLerp, SphsizeLerp);
-      // Update the hue of the sphere
-      const hueColor = new THREE.Color();
-      hueColor.setHSL(hueLerp, 1, 0.5);
-      sphere.material.color.copy(hueColor);
-
-      // Update the size of the box
-      cube.scale.set(sizeLerp, sizeLerp, sizeLerp);
-
-      // Update the hue of the box
-      cube.material.color.setHSL(hueLerp, 0.5, 0.5);
-    }
-
+    stats.begin();
+    stats.end();
     controls.update();
     renderer.render(scene, camera);
   }
