@@ -191,7 +191,7 @@ function main() {
     requestAnimationFrame(moveCamera);
 
     const radius = 10; // Radius of the curves
-    const speed = 0.0002; // Speed of camera movement
+    const speed = 0.0003; // Speed of camera movement
 
     const time = speed * Date.now(); // Time-based parameter for the curves
 
@@ -205,7 +205,7 @@ function main() {
 
     // Y-coordinate of the camera position using a combination of sine and cosine functions
     const y =
-      Math.sin(time *0.04) *
+      Math.tan(time *0.04) *
       Math.sin(time * 1.5, time) *
       Math.sin(time * 2.5,time) *
       radius;
