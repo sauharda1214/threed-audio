@@ -205,7 +205,7 @@ function main() {
 
     // Y-coordinate of the camera position using a combination of sine and cosine functions
     const y =
-      Math.tan(time *0.04) *
+      Math.sin(time *0.04) *
       Math.sin(time * 1.5, time) *
       Math.sin(time * 2.5,time) *
       radius;
