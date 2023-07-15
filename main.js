@@ -236,7 +236,11 @@ function main() {
 
   function animate() {
     requestAnimationFrame(animate);
+    stats.begin();
 
+    // monitored code goes here
+
+    stats.end();
     controls.update();
     renderer.render(scene, camera);
   }
