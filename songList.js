@@ -1,9 +1,10 @@
-import danger from './images/whatsupdanger.jpg'
+import danger from './images/whatsupdanger.jpg';
+import dangerAud from './music/blackaway.flac'
 
 export function songList() {
   return `
   <div id="musicList">
-  <div  data-src="./music/audio.mp3">
+  <div  data-src=${dangerAud}>
   <img src=${danger}>
   <p class="truncate-text">
   Blackway & Black Caviar - "What's Up Danger"
