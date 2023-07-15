@@ -74,7 +74,7 @@ function main() {
 
     positionalAudio.setBuffer(buffer);
     positionalAudio.setLoop(true);
-    positionalAudio.setRefDistance(3.5);
+    positionalAudio.setRefDistance(4.5);
     smcube.add(positionalAudio);
     camera.add(positionalAudio);
     positionalAudio.play();
