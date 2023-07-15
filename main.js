@@ -74,11 +74,9 @@ function main() {
 
     positionalAudio.setBuffer(buffer);
     positionalAudio.setLoop(true);
-    positionalAudio.setRefDistance(4.5);
+    positionalAudio.setRefDistance(5.5);
     smcube.add(positionalAudio);
     camera.add(positionalAudio);
-    positionalAudio.play();
-
     currentAudio = positionalAudio; // Update the currently playing audio
   }
 
@@ -97,6 +95,7 @@ function main() {
     audioLoader.load(URL.createObjectURL(file), function (buffer) {
       document.getElementById("playBtn").onclick = function () {
         playAudio(buffer);
+        positionalAudio.play()
       };
     });
   };
@@ -105,6 +104,7 @@ function main() {
     const dataSrc = this.getAttribute("data-src");
     audioLoader.load(dataSrc, function (buffer) {
       playAudio(buffer);
+      positionalAudio.play()
     });
   }
 
@@ -167,7 +167,7 @@ function main() {
     group.add(star);
     scene.add(group);
 
-    const shouldAnimateDepth = Math.random() >= 0.4; // Determine if the sphere should animate its depth
+    const shouldAnimateDepth = Math.random() >= 0.5; // Determine if the sphere should animate its depth
     let originalScale = group.scale.clone(); // Store the original scale for reference
 
     function updateSphere() {
@@ -191,13 +191,13 @@ function main() {
     requestAnimationFrame(moveCamera);
 
     const radius = 10; // Radius of the curves
-    const speed = 0.0003; // Speed of camera movement
+    const speed = 0.0002; // Speed of camera movement
 
     const time = speed * Date.now(); // Time-based parameter for the curves
 
     // X-coordinate of the camera position using a combination of sine and cosine functions
     const x =
-      Math.sin(time) *
+      Math.sin(time*Math.PI) *
       Math.cos(time * 2) *
       Math.sin(time * 3) *
       Math.cos(Math.PI * time) *
@@ -205,9 +205,9 @@ function main() {
 
     // Y-coordinate of the camera position using a combination of sine and cosine functions
     const y =
-      Math.sin(time * 0.5) *
+      Math.tan(time *0.04) *
       Math.sin(time * 1.5, time) *
-      Math.cos(time * 2.5) *
+      Math.sin(time * 2.5,time) *
       radius;
 
     // Z-coordinate of the camera position using a combination of sine and cosine functions
@@ -243,7 +243,7 @@ function main() {
     // Animation 6: Moving the camera's target
     const targetX = Math.cos(time * 1.5) * 5; // X-coordinate of the point the camera looks at
     const targetY = Math.sin(time * 2) * 5; // Y-coordinate of the point the camera looks at
-    const targetZ = Math.tan(time * 0.5) * 5; // Z-coordinate of the point the camera looks at
+    const targetZ = Math.cosh(time * 0.5) * 5; // Z-coordinate of the point the camera looks at
     const lookAtPosition = new THREE.Vector3(targetX, targetY, targetZ);
     camera.lookAt(lookAtPosition);
   }
