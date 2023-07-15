@@ -95,14 +95,19 @@ function main() {
     });
   };
 
+  // Function to handle button click
   function handleButtonClick() {
     const dataSrc = this.getAttribute("data-src");
-    const urlObject = new URL(dataSrc, window.location.href);
-
-    console.log(urlObject.href)
-    audioLoader.load(urlObject.href, function (buffer) {
-      playAudio(buffer);
-    });
+  
+    fetch(dataSrc)
+      .then(response => response.blob())
+      .then(blob => {
+        const blobUrl = URL.createObjectURL(blob);
+        console.log(blobUrl)
+        audioLoader.load(blobUrl, function (buffer) {
+          playAudio(buffer);
+        });
+      });
   }
 
   // Attach event listeners to buttons with data-src attributes
