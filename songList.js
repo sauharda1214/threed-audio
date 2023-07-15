@@ -3,7 +3,7 @@ import danger from './images/whatsupdanger.jpg';
 export function songList() {
   return `
   <div id="musicList">
-  <div  data-src="music/Blackway Black Caviar - Whats Up Danger (Spider-Man Into the Spider-Verse) [Official Audio] [TubeRipper.com].flac">
+  <div  data-src="./Blackway Black Caviar - Whats Up Danger (Spider-Man Into the Spider-Verse) [Official Audio] [TubeRipper.com].flac">
   <img src=${danger}>
   <p class="truncate-text">
   Blackway & Black Caviar - "What's Up Danger"
