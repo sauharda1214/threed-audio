@@ -103,31 +103,8 @@ function main() {
 
   function handleButtonClick() {
     const dataSrc = this.getAttribute("data-src");
-
-    fetch(dataSrc).then((response) => {
-      const reader = response.body.getReader();
-
-      let receivedLength = 0;
-      let chunks = [];
-
-      function readChunk() {
-        return reader.read().then(({ value, done }) => {
-          if (done) {
-            const blob = new Blob(chunks);
-            const blobUrl = URL.createObjectURL(blob);
-            audioLoader.load(blobUrl, function (buffer) {
-              playAudio(buffer);
-            });
-            return;
-          }
-
-          chunks.push(value);
-          receivedLength += value.length;
-          return readChunk();
-        });
-      }
-
-      return readChunk();
+    audioLoader.load(dataSrc, function (buffer) {
+      playAudio(buffer);
     });
   }
 
@@ -263,8 +240,6 @@ function main() {
     camera.fov = fov;
     camera.updateProjectionMatrix();
 
-
-
     // Animation 6: Moving the camera's target
     const targetX = Math.cos(time * 1.5) * 5; // X-coordinate of the point the camera looks at
     const targetY = Math.sin(time * 2) * 5; // Y-coordinate of the point the camera looks at
@@ -279,14 +254,14 @@ function main() {
   function animate() {
     requestAnimationFrame(animate);
     cube.rotation.y += 0.01;
-    cube.rotation.z += 0.005
+    cube.rotation.z += 0.005;
     stats.begin();
 
     // monitored code goes here
 
     stats.end();
     controls.update();
-    updateBox()
+    updateBox();
     renderer.render(scene, camera);
   }
 
