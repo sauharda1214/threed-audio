@@ -236,8 +236,37 @@ function main() {
 
   function animate() {
     requestAnimationFrame(animate);
-    stats.begin();
-    stats.end();
+
+    if (audioAnalyzer) {
+      const frequencyData = audioAnalyzer.getFrequencyData();
+
+      // Calculate the lerp values for rotation, size, and hue based on the frequency data
+      const rotationLerp = THREE.MathUtils.lerp(0, 0.1, frequencyData[0] / 255); // Adjust the range and the frequency index as needed
+      const sizeLerp = THREE.MathUtils.lerp(1, 2,   frequencyData[1] / 55); // Adjust the range and the frequency index as needed
+      const hueLerp = THREE.MathUtils.lerp(0, 1,   frequencyData[2] / 155); // Adjust the range and the frequency index as needed
+      const SphsizeLerp = THREE.MathUtils.lerp(1, 1,   frequencyData[1] / 55);
+      // Update the rotation of the box
+      cube.rotateX += rotationLerp;
+      cube.rotation.y += rotationLerp / 10;
+      cube.rotation.z += rotationLerp / 10;
+
+      sphere.rotation.x += 0.01;
+      sphere.rotation.y += 0.01;
+      sphere.rotation.z += 0.01;
+
+      sphere.scale.set(SphsizeLerp, SphsizeLerp, SphsizeLerp);
+      // Update the hue of the sphere
+      const hueColor = new THREE.Color();
+      hueColor.setHSL(hueLerp, 1, 0.5);
+      sphere.material.color.copy(hueColor);
+
+      // Update the size of the box
+      cube.scale.set(sizeLerp, sizeLerp, sizeLerp);
+
+      // Update the hue of the box
+      cube.material.color.setHSL(hueLerp, 0.5, 0.5);
+    }
+
     controls.update();
     renderer.render(scene, camera);
   }
