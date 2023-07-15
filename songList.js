@@ -1,8 +1,10 @@
+import danger from './images/whatsupdanger.jpg';
+
 export function songList() {
   return `
   <div id="musicList">
   <div  data-src="music/Blackway Black Caviar - Whats Up Danger (Spider-Man Into the Spider-Verse) [Official Audio] [TubeRipper.com].flac">
-  <img src="./images/whatsupdanger.jpg">
+  <img src=${danger}>
   <p class="truncate-text">
   Blackway & Black Caviar - "What's Up Danger"
   </p>
@@ -21,7 +23,7 @@ Self Love - Metro Boomin, Coi Leray
 </p>
 </div>
 
-<div  data-src="music/Metro Boomin Swae Lee Lil Wayne Offset Annihilate Spider-Man Across the Spider-Verse [TubeRipper.com].flac">
+<div  data-src="./music/Metro Boomin Swae Lee Lil Wayne Offset Annihilate Spider-Man Across the Spider-Verse [TubeRipper.com].flac">
 <img src="./images/anhiliate.jpg">
 <p class="truncate-text">
 Metro Boomin & Swae Lee, Lil Wayne, Offset 
