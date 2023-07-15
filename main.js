@@ -55,7 +55,7 @@ function main() {
   const material = new THREE.MeshBasicMaterial({
     color: 0x00ff00,
     wireframe: true,
-    wireframeLinewidth: 2,
+    wireframeLinewidth: 5,
   });
   const cube = new THREE.Mesh(geometry, material);
   scene.add(cube);
@@ -85,6 +85,12 @@ function main() {
   // Calculate average frequency continuously
   var analyser = new THREE.AudioAnalyser(positionalAudio, 512);
 
+  let targetScale = 2; // Target scale for lerping
+  const scaleSpeed = 0.2; // Speed for lerping scale
+  const color = new THREE.Color(); // Color object for lerping
+  const targetColor = new THREE.Color(); // Target color for lerping
+  const colorSpeed = 0.07; // Speed for lerping color
+
   // Function to handle file input change
   audInput.onchange = function () {
     const file = audInput.files[0];
@@ -97,22 +103,63 @@ function main() {
 
   function handleButtonClick() {
     const dataSrc = this.getAttribute("data-src");
-  
-    fetch(dataSrc)
-      .then(response => response.blob())
-      .then(blob => {
-        const blobUrl = URL.createObjectURL(blob);
-        console.log(blobUrl)
-        audioLoader.load(blobUrl, function (buffer) {
-          playAudio(buffer);
+
+    fetch(dataSrc).then((response) => {
+      const reader = response.body.getReader();
+
+      let receivedLength = 0;
+      let chunks = [];
+
+      function readChunk() {
+        return reader.read().then(({ value, done }) => {
+          if (done) {
+            const blob = new Blob(chunks);
+            const blobUrl = URL.createObjectURL(blob);
+            audioLoader.load(blobUrl, function (buffer) {
+              playAudio(buffer);
+            });
+            return;
+          }
+
+          chunks.push(value);
+          receivedLength += value.length;
+          return readChunk();
         });
-      });
+      }
+
+      return readChunk();
+    });
   }
+
   // Attach event listeners to buttons with data-src attributes
   var buttons = document.querySelectorAll("div[data-src]");
   buttons.forEach(function (button) {
     button.addEventListener("click", handleButtonClick);
   });
+
+  function updateBox() {
+    const data = analyser.getAverageFrequency(); // Retrieve average frequency data
+
+    // Calculate target scale based on the average frequency
+    targetScale = 1 + data / 50;
+    cube.scale.lerp(
+      new THREE.Vector3(targetScale, targetScale, targetScale),
+      scaleSpeed
+    );
+    smcube.scale.lerp(
+      new THREE.Vector3(targetScale, targetScale, targetScale),
+      scaleSpeed
+    );
+
+    // Calculate target color based on the average frequency
+    const hue = Math.asinh(data / 100);
+    targetColor.setHSL(hue, 1, 0.5);
+
+    // Lerp color towards target color
+    color.lerp(targetColor, colorSpeed);
+    cube.material.color.copy(color);
+    smcube.material.color.copy(color);
+  }
 
   //random spheres
 
@@ -128,8 +175,8 @@ function main() {
     const group = new THREE.Group();
 
     const center = new THREE.Vector3(0, 0, 0);
-    const outerRadius = 6;
-    const innerRadius = 6;
+    const outerRadius = 5;
+    const innerRadius = 5;
     const angle1 = Math.random() * 2 * Math.PI;
     const angle2 = Math.random() * 2 * Math.PI;
     const radiusOffset =
@@ -145,7 +192,6 @@ function main() {
 
     const shouldAnimateDepth = Math.random() >= 0.4; // Determine if the sphere should animate its depth
     let originalScale = group.scale.clone(); // Store the original scale for reference
-    const scaleSpeed = 0.2; // Speed for lerping scale
 
     function updateSphere() {
       const data = analyser.getAverageFrequency(); // Retrieve average frequency data
@@ -182,16 +228,16 @@ function main() {
 
     // Y-coordinate of the camera position using a combination of sine and cosine functions
     const y =
-      Math.tanh(time * 0.5) *
+      Math.sin(time * 0.5) *
       Math.sin(time * 1.5, time) *
       Math.cos(time * 2.5) *
       radius;
 
     // Z-coordinate of the camera position using a combination of sine and cosine functions
     const z =
-      Math.sin(time * 3) * Math.cos(time * 0.5) * Math.sin(time * 0.5) * radius;
+      Math.sin(time * 3) * Math.sin(time * 0.5) * Math.sin(time * 0.5) * radius;
 
-    const threshold = 3; // Minimum distance from the center of the scene
+    const threshold = 2; // Minimum distance from the center of the scene
 
     // Check if the camera position is within the threshold bounds
     const distance = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
@@ -217,16 +263,7 @@ function main() {
     camera.fov = fov;
     camera.updateProjectionMatrix();
 
-    // Animation 3: Changing the camera's up vector
-    const upVectorX = Math.cos(time * 0.8); // X-component of the camera's up vector
-    const upVectorY = Math.sin(time * 1.2); // Y-component of the camera's up vector
-    const upVectorZ = Math.sin(time * 0.4); // Z-component of the camera's up vector
-    const upVector = new THREE.Vector3(
-      upVectorX,
-      upVectorY,
-      upVectorZ
-    ).normalize();
-    camera.up.copy(upVector);
+
 
     // Animation 6: Moving the camera's target
     const targetX = Math.cos(time * 1.5) * 5; // X-coordinate of the point the camera looks at
@@ -241,12 +278,15 @@ function main() {
 
   function animate() {
     requestAnimationFrame(animate);
+    cube.rotation.y += 0.01;
+    cube.rotation.z += 0.005
     stats.begin();
 
     // monitored code goes here
 
     stats.end();
     controls.update();
+    updateBox()
     renderer.render(scene, camera);
   }
 

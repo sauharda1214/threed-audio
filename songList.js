@@ -1,11 +1,11 @@
-import danger from './images/whatsupdanger.jpg';
-import selflove from './images/selflove.jpg';
-import sunflower from './images/sunflower.jpg';
-import offset from './images/offset.jpg';
-import dangerAud from './music/blackaway.flac';
-import selfloveAud from './music/selflove.flac';
-import sunflowerAud from './music/sunflower.flac';
-import offsetAud from './music/offset.flac';
+import danger from "./images/whatsupdanger.jpg";
+import selflove from "/images/selfloveimg.jpg";
+import sunflower from "./images/sunflower.jpg";
+import offset from "./images/offset.jpg";
+import dangerAud from "./music/blackaway.flac";
+import selfloveAud from "./music/selflove.flac";
+import sunflowerAud from "./music/sunflower.flac";
+import offsetAud from "./music/offset.flac";
 
 export function songList() {
   return `
@@ -24,7 +24,7 @@ Post Malone, Swae Lee - Sunflower
 </div>
 
 <div  data-src=${selfloveAud}>
-<img src="${selflove}>
+<img src="${selflove}">
 <p class="truncate-text">
 Self Love - Metro Boomin, Coi Leray
 </p>
