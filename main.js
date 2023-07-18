@@ -3,6 +3,8 @@ import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import Stats from "stats.js";
+import { Notyf } from "notyf";
+import "notyf/notyf.min.css"; // for React, Vue and Svelte
 
 const overlayBtn = document.getElementById("startButton");
 
@@ -17,6 +19,9 @@ function main() {
   stats.showPanel(0);
   stats.dom.style.position = "relative";
   document.getElementById("stats").appendChild(stats.dom);
+
+  // Custom JavaScript code
+  var notyf = new Notyf();
 
   // scene
   const scene = new THREE.Scene();
@@ -95,24 +100,35 @@ function main() {
     audioLoader.load(URL.createObjectURL(file), function (buffer) {
       document.getElementById("playBtn").onclick = function () {
         playAudio(buffer);
-        positionalAudio.play()
+        positionalAudio.play();
       };
     });
   };
 
-  function handleButtonClick() {
-    const dataSrc = this.getAttribute("data-src");
-    audioLoader.load(dataSrc, function (buffer) {
-      playAudio(buffer);
-      positionalAudio.play()
-    });
-  }
-
   // Attach event listeners to buttons with data-src attributes
   var buttons = document.querySelectorAll("div[data-src]");
   buttons.forEach(function (button) {
-    button.addEventListener("click", handleButtonClick);
+    button.addEventListener("click", function () {
+      const dataSrc = this.getAttribute("data-src");
+  
+      // Display the loading progress as a toast using Notyf.js
+      notyf.open({
+        type: 'success',
+        message: 'Loading...',
+        duration: 0,
+      });
+  
+      audioLoader.load(dataSrc, function (buffer) {
+        // Remove the loading toast once the file is loaded
+        notyf.dismissAll()
+  
+        // Play the audio
+        playAudio(buffer);
+        positionalAudio.play();
+      });
+    });
   });
+  
 
   function updateBox() {
     const data = analyser.getAverageFrequency(); // Retrieve average frequency data
@@ -129,7 +145,7 @@ function main() {
     );
 
     // Calculate target color based on the average frequency
-    const hue = Math.asinh(data / 100);
+    const hue = Math.asin(data / 100);
     targetColor.setHSL(hue, 1, 0.5);
 
     // Lerp color towards target color
@@ -197,7 +213,7 @@ function main() {
 
     // X-coordinate of the camera position using a combination of sine and cosine functions
     const x =
-      Math.sin(time*Math.PI) *
+      Math.sin(time * Math.PI) *
       Math.cos(time * 2) *
       Math.sin(time * 3) *
       Math.cos(Math.PI * time) *
@@ -205,9 +221,9 @@ function main() {
 
     // Y-coordinate of the camera position using a combination of sine and cosine functions
     const y =
-      Math.cos(time *0.04) *
+      Math.cos(time * 0.04) *
       Math.sin(time * 1.5, time) *
-      Math.sin(time * 2.5,time) *
+      Math.sin(time * 2.5, time) *
       radius;
 
     // Z-coordinate of the camera position using a combination of sine and cosine functions
