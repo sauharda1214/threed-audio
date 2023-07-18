@@ -114,14 +114,12 @@ function main() {
       // Display the loading progress as a toast using Notyf.js
       notyf.open({
         type: 'success',
-        message: 'Loading...',
+        message: 'Loading... Please Wait',
         duration: 0,
       });
   
       audioLoader.load(dataSrc, function (buffer) {
-        // Remove the loading toast once the file is loaded
         notyf.dismissAll()
-  
         // Play the audio
         playAudio(buffer);
         positionalAudio.play();
