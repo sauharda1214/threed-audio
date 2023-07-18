@@ -97,8 +97,8 @@ function main() {
   // Function to handle file input change
   audInput.onchange = function () {
     const file = audInput.files[0];
-    const URL = URL.createObjectURL(file);
-    audioLoader.load(URL, function (buffer) {
+    const url = URL.createObjectURL(file);
+    audioLoader.load(url, function (buffer) {
       document.getElementById("playBtn").onclick = function () {
         playAudio(buffer);
         positionalAudio.play();
