@@ -65,66 +65,80 @@ function main() {
   const cube = new THREE.Mesh(geometry, material);
   scene.add(cube);
 
-  var audInput = document.getElementById("audioInput");
-  var audioListener = new THREE.AudioListener();
-  var audioLoader = new THREE.AudioLoader();
-  var positionalAudio = new THREE.PositionalAudio(audioListener);
-  var currentAudio = null; // Track the currently playing audio
 
-  // Function to handle audio play
-  function playAudio(buffer) {
-    if (currentAudio) {
-      currentAudio.stop(); // Stop the currently playing audio
-    }
+var audInput = document.getElementById("audioInput");
+var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+var audioSource = audioContext.createBufferSource();
+var audioListener = new THREE.AudioListener();
+var positionalAudio = new THREE.PositionalAudio(audioListener);
+var currentAudio = null; // Track the currently playing audio
 
-    positionalAudio.setBuffer(buffer);
-    positionalAudio.setLoop(true);
-    positionalAudio.setRefDistance(5.5);
-    smcube.add(positionalAudio);
-    camera.add(positionalAudio);
-    currentAudio = positionalAudio; // Update the currently playing audio
-    positionalAudio.play();
+// Function to handle audio play
+function playAudio(buffer) {
+  if (currentAudio) {
+    currentAudio.stop(); // Stop the currently playing audio
   }
 
-  // Calculate average frequency continuously
-  var analyser = new THREE.AudioAnalyser(positionalAudio, 512);
+  positionalAudio.setBuffer(buffer);
+  positionalAudio.setLoop(true);
+  positionalAudio.setRefDistance(5.5);
+  smcube.add(positionalAudio);
+  camera.add(positionalAudio);
+  currentAudio = positionalAudio; // Update the currently playing audio
+  positionalAudio.play();
+}
 
-  let targetScale = 2; // Target scale for lerping
-  const scaleSpeed = 0.2; // Speed for lerping scale
-  const color = new THREE.Color(); // Color object for lerping
-  const targetColor = new THREE.Color(); // Target color for lerping
-  const colorSpeed = 0.07; // Speed for lerping color
+// Calculate average frequency continuously
+var analyser = new THREE.AudioAnalyser(positionalAudio, 512);
 
-  // Function to handle file input change
-  audInput.onchange = function () {
-    const file = audInput.files[0];
-    audioLoader.load(URL.createObjectURL(file), function (buffer) {
+let targetScale = 2; // Target scale for lerping
+const scaleSpeed = 0.2; // Speed for lerping scale
+const color = new THREE.Color(); // Color object for lerping
+const targetColor = new THREE.Color(); // Target color for lerping
+const colorSpeed = 0.07; // Speed for lerping color
+
+// Function to handle file input change
+audInput.onchange = function () {
+  const file = audInput.files[0];
+  const reader = new FileReader();
+
+  reader.onload = function (event) {
+    const arrayBuffer = event.target.result;
+    audioContext.decodeAudioData(arrayBuffer, function (buffer) {
       document.getElementById("playBtn").onclick = function () {
         playAudio(buffer);
       };
     });
   };
 
-  // Attach event listeners to buttons with data-src attributes
-  var buttons = document.querySelectorAll("div[data-src]");
-  buttons.forEach(function (button) {
-    button.addEventListener("click", function () {
-      const dataSrc = this.getAttribute("data-src");
+  reader.readAsArrayBuffer(file);
+};
 
-      // Display the loading progress as a toast using Notyf.js
-      notyf.open({
-        type: "success",
-        message: "Loading... Please Wait",
-        duration: 0,
-      });
+// Attach event listeners to buttons with data-src attributes
+var buttons = document.querySelectorAll("div[data-src]");
+buttons.forEach(function (button) {
+  button.addEventListener("click", function () {
+    const dataSrc = this.getAttribute("data-src");
 
-      audioLoader.load(dataSrc, function (buffer) {
-        notyf.dismissAll();
-        // Play the audio
-        playAudio(buffer);
-      });
+    // Display the loading progress as a toast using Notyf.js
+    notyf.open({
+      type: "success",
+      message: "Loading... Please Wait",
+      duration: 0,
     });
+
+    fetch(dataSrc)
+      .then((response) => response.arrayBuffer())
+      .then((arrayBuffer) => {
+        audioContext.decodeAudioData(arrayBuffer, function (buffer) {
+          notyf.dismissAll();
+          // Play the audio
+          playAudio(buffer);
+        });
+      });
   });
+});
+
 
   function updateBox() {
     const data = analyser.getAverageFrequency(); // Retrieve average frequency data
