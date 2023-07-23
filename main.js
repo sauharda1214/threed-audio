@@ -83,6 +83,7 @@ function main() {
     smcube.add(positionalAudio);
     camera.add(positionalAudio);
     currentAudio = positionalAudio; // Update the currently playing audio
+    positionalAudio.play();
   }
 
   // Calculate average frequency continuously
@@ -97,11 +98,9 @@ function main() {
   // Function to handle file input change
   audInput.onchange = function () {
     const file = audInput.files[0];
-    const url = URL.createObjectURL(file);
-    audioLoader.load(url, function (buffer) {
+    audioLoader.load(URL.createObjectURL(file), function (buffer) {
       document.getElementById("playBtn").onclick = function () {
         playAudio(buffer);
-        positionalAudio.play();
       };
     });
   };
@@ -111,23 +110,21 @@ function main() {
   buttons.forEach(function (button) {
     button.addEventListener("click", function () {
       const dataSrc = this.getAttribute("data-src");
-  
+
       // Display the loading progress as a toast using Notyf.js
       notyf.open({
-        type: 'success',
-        message: 'Loading... Please Wait',
+        type: "success",
+        message: "Loading... Please Wait",
         duration: 0,
       });
-  
+
       audioLoader.load(dataSrc, function (buffer) {
-        notyf.dismissAll()
+        notyf.dismissAll();
         // Play the audio
         playAudio(buffer);
-        positionalAudio.play();
       });
     });
   });
-  
 
   function updateBox() {
     const data = analyser.getAverageFrequency(); // Retrieve average frequency data
@@ -162,6 +159,7 @@ function main() {
       color: color,
       emissive: color,
       emissiveIntensity: 2,
+      metalness: 2,
     });
     const star = new THREE.Mesh(stars, material);
     const group = new THREE.Group();
@@ -174,6 +172,7 @@ function main() {
     const radiusOffset =
       Math.sqrt(Math.random()) * (outerRadius - innerRadius) + innerRadius;
 
+      
     star.position.set(
       center.x + radiusOffset * Math.sin(angle1) * Math.cos(angle2),
       center.y + radiusOffset * Math.sin(angle1) * Math.sin(angle2),
@@ -187,7 +186,7 @@ function main() {
 
     function updateSphere() {
       const data = analyser.getAverageFrequency(); // Retrieve average frequency data
-      const depthScale = 1 + data / 200; // Adjust the divisor to control the depth increase speed
+      const depthScale = Math.asinh(1 + data / -200); // Adjust the divisor to control the depth increase speed
       const scale = shouldAnimateDepth ? depthScale : 1; // Set the scale based on whether depth animation should occur
       group.scale.lerp(originalScale.clone().multiplyScalar(scale), scaleSpeed); // Apply the scaled depth to the group
     }
