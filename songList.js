@@ -2,7 +2,7 @@ import danger from "./images/whatsupdanger.jpg";
 import selflove from "/images/selfloveimg.jpg";
 import sunflower from "./images/sunflower.jpg";
 import offset from "./images/offset.jpg";
-import dangerAud from "./music/blackaway.flac";
+import dangerAud from "./music/blackaway.mp3";
 import selfloveAud from "./music/selflove.flac";
 import sunflowerAud from "./music/sunflower.flac";
 import offsetAud from "./music/offset.flac";
