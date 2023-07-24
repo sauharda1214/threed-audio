@@ -1,5 +1,5 @@
-import { pageHTML } from "./html";
 import "./style.css";
+import { pageHTML } from "./html";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import Stats from "stats.js";
@@ -65,80 +65,86 @@ function main() {
   const cube = new THREE.Mesh(geometry, material);
   scene.add(cube);
 
+  var audInput = document.getElementById("audioInput");
+  var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  var audioListener = new THREE.AudioListener();
+  var positionalAudio = new THREE.PositionalAudio(audioListener);
+  var currentAudio = null; // Track the currently playing audio
 
-var audInput = document.getElementById("audioInput");
-var audioContext = new (window.AudioContext || window.webkitAudioContext)();
-var audioSource = audioContext.createBufferSource();
-var audioListener = new THREE.AudioListener();
-var positionalAudio = new THREE.PositionalAudio(audioListener);
-var currentAudio = null; // Track the currently playing audio
+  // Function to handle audio play
+  function playAudio(buffer) {
+    if (currentAudio) {
+      currentAudio.stop(); // Stop the currently playing audio
+    }
 
-// Function to handle audio play
-function playAudio(buffer) {
-  if (currentAudio) {
-    currentAudio.stop(); // Stop the currently playing audio
+    positionalAudio.setBuffer(buffer);
+    positionalAudio.setLoop(true);
+    positionalAudio.setRefDistance(5.5);
+    smcube.add(positionalAudio);
+    camera.add(positionalAudio);
+    currentAudio = positionalAudio; // Update the currently playing audio
+    positionalAudio.play();
   }
 
-  positionalAudio.setBuffer(buffer);
-  positionalAudio.setLoop(true);
-  positionalAudio.setRefDistance(5.5);
-  smcube.add(positionalAudio);
-  camera.add(positionalAudio);
-  currentAudio = positionalAudio; // Update the currently playing audio
-  positionalAudio.play();
-}
+  // Calculate average frequency continuously
+  var analyser = new THREE.AudioAnalyser(positionalAudio, 512);
 
-// Calculate average frequency continuously
-var analyser = new THREE.AudioAnalyser(positionalAudio, 512);
+  let targetScale = 2; // Target scale for lerping
+  const scaleSpeed = 0.2; // Speed for lerping scale
+  const color = new THREE.Color(); // Color object for lerping
+  const targetColor = new THREE.Color(); // Target color for lerping
+  const colorSpeed = 0.07; // Speed for lerping color
 
-let targetScale = 2; // Target scale for lerping
-const scaleSpeed = 0.2; // Speed for lerping scale
-const color = new THREE.Color(); // Color object for lerping
-const targetColor = new THREE.Color(); // Target color for lerping
-const colorSpeed = 0.07; // Speed for lerping color
+  // Function to handle file input change
+  audInput.onchange = function fileAud () {
+    const file = audInput.files[0];
+    const reader = new FileReader();
 
-// Function to handle file input change
-audInput.onchange = function () {
-  const file = audInput.files[0];
-  const reader = new FileReader();
+    reader.onload = function (event) {
+      const arrayBuffer = event.target.result;
 
-  reader.onload = function (event) {
-    const arrayBuffer = event.target.result;
-    audioContext.decodeAudioData(arrayBuffer, function (buffer) {
-      document.getElementById("playBtn").onclick = function () {
-        playAudio(buffer);
-      };
-    });
+      audioContext.decodeAudioData(arrayBuffer, function (buffer) {
+        document.getElementById("playBtn").onclick = function () {
+          playAudio(buffer);
+        };
+      });
+    };
+
+    reader.readAsArrayBuffer(file);
   };
 
-  reader.readAsArrayBuffer(file);
-};
+  // Attach event listeners to buttons with data-src attributes
+  var buttons = document.querySelectorAll("div[data-src]");
+  buttons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      const dataSrc = this.getAttribute("data-src");
 
-// Attach event listeners to buttons with data-src attributes
-var buttons = document.querySelectorAll("div[data-src]");
-buttons.forEach(function (button) {
-  button.addEventListener("click", function () {
-    const dataSrc = this.getAttribute("data-src");
-
-    // Display the loading progress as a toast using Notyf.js
-    notyf.open({
-      type: "success",
-      message: "Loading... Please Wait",
-      duration: 0,
-    });
-
-    fetch(dataSrc)
-      .then((response) => response.arrayBuffer())
-      .then((arrayBuffer) => {
-        audioContext.decodeAudioData(arrayBuffer, function (buffer) {
-          notyf.dismissAll();
-          // Play the audio
-          playAudio(buffer);
-        });
+      // Display the loading progress as a toast using Notyf.js
+      notyf.open({
+        type: "success",
+        message: "Loading... Please Wait",
+        duration: 0,
       });
-  });
-});
 
+      fetch(dataSrc)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok.");
+          }
+          return response.arrayBuffer();
+        })
+        .then((arrayBuffer) => {
+          audioContext.decodeAudioData(arrayBuffer, function (buffer) {
+            notyf.dismissAll();
+            // Play the audio
+            playAudio(buffer);
+          });
+        })
+        .catch((error) => {
+          notyf.error("Failed to load the audio.");
+        });
+    });
+  });
 
   function updateBox() {
     const data = analyser.getAverageFrequency(); // Retrieve average frequency data
@@ -167,7 +173,7 @@ buttons.forEach(function (button) {
   //random spheres
 
   function randomSpheres() {
-    const stars = new THREE.SphereGeometry(0.01, 8, 8);
+    const stars = new THREE.SphereGeometry(0.02, 8, 8);
     const color = new THREE.Color(Math.random() * 0xffffff);
     const material = new THREE.MeshStandardMaterial({
       color: color,
@@ -179,14 +185,13 @@ buttons.forEach(function (button) {
     const group = new THREE.Group();
 
     const center = new THREE.Vector3(0, 0, 0);
-    const outerRadius = 5;
-    const innerRadius = 5;
+    const outerRadius = 6;
+    const innerRadius = 6;
     const angle1 = Math.random() * 2 * Math.PI;
     const angle2 = Math.random() * 2 * Math.PI;
     const radiusOffset =
       Math.sqrt(Math.random()) * (outerRadius - innerRadius) + innerRadius;
 
-      
     star.position.set(
       center.x + radiusOffset * Math.sin(angle1) * Math.cos(angle2),
       center.y + radiusOffset * Math.sin(angle1) * Math.sin(angle2),
@@ -200,7 +205,7 @@ buttons.forEach(function (button) {
 
     function updateSphere() {
       const data = analyser.getAverageFrequency(); // Retrieve average frequency data
-      const depthScale = Math.asinh(1 + data / -200); // Adjust the divisor to control the depth increase speed
+      const depthScale = Math.atan(1 + data / -200); // Adjust the divisor to control the depth increase speed
       const scale = shouldAnimateDepth ? depthScale : 1; // Set the scale based on whether depth animation should occur
       group.scale.lerp(originalScale.clone().multiplyScalar(scale), scaleSpeed); // Apply the scaled depth to the group
     }
