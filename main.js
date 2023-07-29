@@ -90,7 +90,7 @@ function main() {
   var analyser = new THREE.AudioAnalyser(positionalAudio, 512);
 
   let targetScale = 2; // Target scale for lerping
-  const scaleSpeed = 0.2; // Speed for lerping scale
+  const scaleSpeed = 0.1; // Speed for lerping scale
   const color = new THREE.Color(); // Color object for lerping
   const targetColor = new THREE.Color(); // Target color for lerping
   const colorSpeed = 0.07; // Speed for lerping color
@@ -173,13 +173,11 @@ function main() {
   //random spheres
 
   function randomSpheres() {
-    const stars = new THREE.SphereGeometry(0.02, 8, 8);
+    const stars = new THREE.BoxGeometry(0.02, 0.02, 0.02);
     const color = new THREE.Color(Math.random() * 0xffffff);
-    const material = new THREE.MeshStandardMaterial({
+    const material = new THREE.MeshBasicMaterial({
       color: color,
-      emissive: color,
-      emissiveIntensity: 2,
-      metalness: 2,
+      wireframe:true
     });
     const star = new THREE.Mesh(stars, material);
     const group = new THREE.Group();
@@ -202,13 +200,28 @@ function main() {
 
     const shouldAnimateDepth = Math.random() >= 0.5; // Determine if the sphere should animate its depth
     let originalScale = group.scale.clone(); // Store the original scale for reference
+    
 
     function updateSphere() {
       const data = analyser.getAverageFrequency(); // Retrieve average frequency data
-      const depthScale = Math.atan(1 + data / -200); // Adjust the divisor to control the depth increase speed
+    
+      // Map the frequency data to a hue value (0 to 1)
+      const hue = Math.asin(data / 100); // Assuming getAverageFrequency() returns values from 0 to 255
+    
+      // Set the material color based on the hue value
+      const color = new THREE.Color().setHSL(hue, 0.5, 0.5); // Using full saturation (1) and medium lightness (0.5)
+    
+      // Update the material color
+      group.children.forEach((star) => {
+        star.material.color.copy(color);
+      });
+    
+      const depthScale = Math.tan(1 + data / -200); // Adjust the divisor to control the depth increase speed
       const scale = shouldAnimateDepth ? depthScale : 1; // Set the scale based on whether depth animation should occur
+      
       group.scale.lerp(originalScale.clone().multiplyScalar(scale), scaleSpeed); // Apply the scaled depth to the group
     }
+    
 
     function animateGroup() {
       requestAnimationFrame(animateGroup);
@@ -216,14 +229,14 @@ function main() {
     }
     animateGroup();
   }
-  Array(1500).fill().forEach(randomSpheres);
+  Array(2000).fill().forEach(randomSpheres);
 
   moveCamera();
 
   function moveCamera() {
     requestAnimationFrame(moveCamera);
 
-    const radius = 20; // Radius of the curves
+    const radius = 30; // Radius of the curves
     const speed = 0.0002; // Speed of camera movement
 
     const time = speed * Date.now(); // Time-based parameter for the curves
