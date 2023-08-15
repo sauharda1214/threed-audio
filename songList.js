@@ -30,7 +30,7 @@ Self Love - Metro Boomin, Coi Leray
 </p>
 </div>
 
-<div  data-src=${offsetAud}>
+<div  data-src='./offset.flac'>
 <img src=${offset}>
 <p class="truncate-text">
 Metro Boomin & Swae Lee, Lil Wayne, Offset 
