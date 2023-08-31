@@ -1,9 +1,7 @@
 import { songList } from "./songList";
 
-
-
-export function menu(){
-return`<div class="hamburger-menu">
+export function menu() {
+  return `<div class="hamburger-menu">
     <input id="menu__toggle" type="checkbox" />
     <label class="menu__btn" for="menu__toggle">
       <span></span>
@@ -17,6 +15,8 @@ return`<div class="hamburger-menu">
       <input  type="file" id="audioInput" accept=".mp3,.flac,.ogg,.wav,.m4a">
       <div id="progressText"></div>
       <button id="playBtn">PLAY AUDIO</button>
+      <input type="checkbox" id="enable"> Disable Camera Movement
+
       <br>
       <h1 id="or">OR</h1>
       </label>
@@ -31,6 +31,5 @@ return`<div class="hamburger-menu">
       </li>
     </ul>
   </div>
-    `
-
+    `;
 }
