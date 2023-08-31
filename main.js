@@ -293,7 +293,8 @@ function main() {
     const lookAtPosition = new THREE.Vector3(targetX, targetY, targetZ);
     camera.lookAt(lookAtPosition);
   }
-
+  moveCamera();
+  
   checkbox.addEventListener("change", function () {
     if (checkbox.checked) {
       cancelAnimationFrame(moveCamera);
@@ -302,7 +303,7 @@ function main() {
     }
   });
 
-  moveCamera();
+
 
 
   window.addEventListener("resize", onWindowResize);
