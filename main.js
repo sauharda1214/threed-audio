@@ -96,7 +96,7 @@ function main() {
   const colorSpeed = 0.07; // Speed for lerping color
 
   // Function to handle file input change
-  audInput.onchange = function fileAud () {
+  audInput.onchange = function fileAud() {
     const file = audInput.files[0];
     const reader = new FileReader();
 
@@ -177,7 +177,7 @@ function main() {
     const color = new THREE.Color(Math.random() * 0xffffff);
     const material = new THREE.MeshBasicMaterial({
       color: color,
-      wireframe:true
+      wireframe: true,
     });
     const star = new THREE.Mesh(stars, material);
     const group = new THREE.Group();
@@ -200,28 +200,26 @@ function main() {
 
     const shouldAnimateDepth = Math.random() >= 0.5; // Determine if the sphere should animate its depth
     let originalScale = group.scale.clone(); // Store the original scale for reference
-    
 
     function updateSphere() {
       const data = analyser.getAverageFrequency(); // Retrieve average frequency data
-    
+
       // Map the frequency data to a hue value (0 to 1)
       const hue = Math.asin(data / 100); // Assuming getAverageFrequency() returns values from 0 to 255
-    
+
       // Set the material color based on the hue value
       const color = new THREE.Color().setHSL(hue, 0.5, 0.5); // Using full saturation (1) and medium lightness (0.5)
-    
+
       // Update the material color
       group.children.forEach((star) => {
         star.material.color.copy(color);
       });
-    
+
       const depthScale = Math.tan(1 + data / -200); // Adjust the divisor to control the depth increase speed
       const scale = shouldAnimateDepth ? depthScale : 1; // Set the scale based on whether depth animation should occur
-      
+
       group.scale.lerp(originalScale.clone().multiplyScalar(scale), scaleSpeed); // Apply the scaled depth to the group
     }
-    
 
     function animateGroup() {
       requestAnimationFrame(animateGroup);
@@ -231,11 +229,14 @@ function main() {
   }
   Array(2000).fill().forEach(randomSpheres);
 
-  moveCamera();
+  const checkbox = document.getElementById("enable");
 
   function moveCamera() {
-    requestAnimationFrame(moveCamera);
+    if (checkbox.checked) {
+      return;
+    }
 
+    requestAnimationFrame(moveCamera);
     const radius = 30; // Radius of the curves
     const speed = 0.0002; // Speed of camera movement
 
@@ -294,7 +295,17 @@ function main() {
     camera.lookAt(lookAtPosition);
   }
 
-  animate();
+  checkbox.addEventListener("change", function () {
+    if (checkbox.checked) {
+      cancelAnimationFrame(moveCamera);
+    } else {
+      moveCamera();
+    }
+  });
+
+  moveCamera();
+
+
   window.addEventListener("resize", onWindowResize);
 
   function animate() {
@@ -310,6 +321,8 @@ function main() {
     updateBox();
     renderer.render(scene, camera);
   }
+
+  animate();
 
   //resize camera according to devices..
   function onWindowResize() {
