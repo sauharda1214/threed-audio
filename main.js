@@ -42,7 +42,8 @@ function main() {
 
   // orbitControls
   const controls = new OrbitControls(camera, renderer.domElement);
-
+  controls.enableDamping = true;
+  controls.enablePan = false;
   controls.update();
 
   const ambientLight = new THREE.AmbientLight(0xffffff, 1);
